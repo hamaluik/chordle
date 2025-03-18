@@ -2,9 +2,10 @@ use color_eyre::{Result, eyre::Context};
 use jiff::Span;
 use sqlx::{SqlitePool, sqlite::SqliteConnectOptions};
 use std::path::Path;
+use types::DbChore;
 
 mod types;
-pub use types::Chore;
+pub use types::{Chore, ChoreId};
 
 #[derive(Clone, Debug)]
 pub struct Db {
@@ -84,6 +85,43 @@ values (?, ?)
         .execute(&self.pool)
         .await
         .wrap_err("Failed to create chore")?;
+
+        Ok(())
+    }
+
+    pub async fn update_chore(&self, chore: Chore) -> Result<()> {
+        let db_chore: DbChore = chore.into();
+
+        sqlx::query!(
+            r#"
+update chores
+set name = ?, interval = ?
+where id = ?
+            "#,
+            db_chore.name,
+            db_chore.interval,
+            db_chore.id,
+        )
+        .execute(&self.pool)
+        .await
+        .wrap_err("Failed to update chore")?;
+
+        Ok(())
+    }
+
+    pub async fn delete_chore(&self, id: ChoreId) -> Result<()> {
+        let dbid: i64 = id.into();
+
+        sqlx::query!(
+            r#"
+delete from chores
+where id = ?
+            "#,
+            dbid,
+        )
+        .execute(&self.pool)
+        .await
+        .wrap_err("Failed to delete chore")?;
 
         Ok(())
     }

@@ -2,7 +2,15 @@ use axum::body::Body;
 use axum::http::{Response, StatusCode};
 use axum::response::IntoResponse;
 
+#[derive(Debug)]
 pub struct ErrorResponse;
+
+impl std::error::Error for ErrorResponse {}
+impl std::fmt::Display for ErrorResponse {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "An error occurred")
+    }
+}
 
 impl IntoResponse for ErrorResponse {
     fn into_response(self) -> Response<Body> {

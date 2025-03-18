@@ -1,5 +1,5 @@
 use crate::{
-    db::Chore,
+    db::{Chore, ChoreId},
     web::{
         AppState,
         ui::{MANAGER_EDIT_URI, MANAGER_NEW_URI},
@@ -42,7 +42,7 @@ fn render_chore(chore: &Chore, has_name_error: bool, has_interval_error: bool) -
     }
 }
 
-fn render_chores<I>(chores: I) -> Markup
+fn render_chores<I>(chores: I, edit_errors: Option<(ChoreId, bool, bool)>) -> Markup
 where
     I: Iterator,
     I::Item: AsRef<Chore>,
@@ -50,7 +50,13 @@ where
     html!(
         div.chores {
             @for chore in chores {
-                (render_chore(chore.as_ref(), false, false))
+                ({
+                    let (name_error, interval_error) = match edit_errors {
+                        Some((id, name_error, interval_error)) if id == chore.as_ref().id => (name_error, interval_error),
+                        _ => (false, false),
+                    };
+                    render_chore(chore.as_ref(), name_error, interval_error)
+                })
             }
         }
     )
@@ -102,24 +108,26 @@ fn render_new_chore(
 
 #[derive(Default)]
 pub struct RenderErrors {
+    pub edit_errors: Option<(ChoreId, bool, bool)>,
     pub create_has_name_error: bool,
     pub create_has_interval_error: bool,
     pub create_created_ok: Option<bool>,
 }
 
-pub async fn render(app_state: &AppState, errors: RenderErrors) -> Result<Markup> {
+pub async fn render(app_state: &AppState, errors: Option<RenderErrors>) -> Result<Markup> {
     let chores = app_state
         .db
         .get_all_chores()
         .await
         .wrap_err("Failed to get chores")?;
+    let errors = errors.unwrap_or_default();
 
     Ok(html! {
         main.manager {
             h1 { "Manage" }
             fieldset {
                 legend { "Chores" }
-                (render_chores(chores.iter()))
+                (render_chores(chores.iter(), errors.edit_errors))
             }
             fieldset {
                 legend { "New Chore" }

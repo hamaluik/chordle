@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\ndelete from chores\nwhere id = ?\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "4be745fcf2a32eae17c1f9f72e25f54771afad6126c6c9146eb31b9f737d414c"
+}

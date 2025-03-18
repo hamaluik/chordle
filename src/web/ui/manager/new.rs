@@ -22,11 +22,11 @@ pub async fn new_chore(
     if !name_is_valid || !interval_is_valid {
         return Ok(super::render::render(
             &app_state,
-            super::render::RenderErrors {
+            Some(super::render::RenderErrors {
                 create_has_name_error: !name_is_valid,
                 create_has_interval_error: !interval_is_valid,
                 ..Default::default()
-            },
+            }),
         )
         .await?);
     }
@@ -35,20 +35,20 @@ pub async fn new_chore(
         tracing::warn!("Failed to create chore: {e:#?}");
         return Ok(super::render::render(
             &app_state,
-            super::render::RenderErrors {
+            Some(super::render::RenderErrors {
                 create_created_ok: Some(false),
                 ..Default::default()
-            },
+            }),
         )
         .await?);
     }
 
     Ok(super::render::render(
         &app_state,
-        super::render::RenderErrors {
+        Some(super::render::RenderErrors {
             create_created_ok: Some(true),
             ..Default::default()
-        },
+        }),
     )
     .await?)
 }

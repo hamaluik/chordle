@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\nupdate chores\nset name = ?, interval = ?\nwhere id = ?\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "72d23eff68e456c9598c21968abb383a2b1cb39fb6292afacac09758eb3efc8a"
+}

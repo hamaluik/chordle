@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "\nselect id, name, interval\nfrom chores\norder by name asc\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "interval",
+        "ordinal": 2,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "21d08f547b7b844bc5ec7145bb6f6fcdf15bcc918b1fc0509159d1a103d99493"
+}

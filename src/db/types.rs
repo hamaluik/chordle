@@ -7,7 +7,7 @@ use color_eyre::{Result, eyre::Context};
 use jiff::{Span, Timestamp};
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Copy)]
 /// The ID of a chore
 pub struct ChoreId(pub i64);
 

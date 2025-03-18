@@ -7,3 +7,4 @@ create table chores (
     -- (see https://docs.rs/jiff/latest/jiff/struct.Span.html#parsing-and-printing)
     interval text not null
 );
+

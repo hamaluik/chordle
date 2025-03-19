@@ -49,6 +49,7 @@ pub async fn record_event(
     Ok(Redirect::to(HOME_URI))
 }
 
+#[tracing::instrument]
 fn time_until_next_chore(now: &Zoned, chore_event: &ChoreEvent) -> Span {
     if chore_event.timestamp.is_none() {
         return Span::new().microseconds(0);
@@ -59,6 +60,7 @@ fn time_until_next_chore(now: &Zoned, chore_event: &ChoreEvent) -> Span {
     next_chore.since(now).expect("can calculate time since")
 }
 
+#[tracing::instrument]
 fn sort_chores(mut chores: Vec<ChoreEvent>) -> Vec<ChoreEvent> {
     let now = Zoned::now();
 
@@ -74,9 +76,44 @@ fn sort_chores(mut chores: Vec<ChoreEvent>) -> Vec<ChoreEvent> {
     chores
 }
 
+fn classify(
+    now: &Zoned,
+    next_due: &Zoned,
+    interval: &Span,
+    last_completed: &Option<Zoned>,
+) -> &'static str {
+    let is_daily = interval
+        .total((Unit::Day, Zoned::now().date()))
+        .expect("can calculate total days")
+        < 1.0;
+
+    if let Some(last_completed) = last_completed {
+        if last_completed.date() == now.date() {
+            return "chore-done";
+        }
+    }
+
+    let due_days = next_due
+        .since(now)
+        .ok()
+        .map_or(0.0, |d| {
+            d.total(SpanTotal::from(Unit::Day).days_are_24_hours())
+                .expect("can calculate total days")
+        })
+        .ceil() as i64;
+
+    if next_due < now || (due_days <= 1 && !is_daily) {
+        "chore-due"
+    } else if due_days <= 3 && !is_daily {
+        "chore-due-soon"
+    } else {
+        "chore-due-later"
+    }
+}
+
+#[tracing::instrument]
 fn render_chore(chore_event: &ChoreEvent) -> Markup {
     let now = Zoned::now();
-    tracing::debug!(chore_event = ?chore_event, "Rendering chore");
     let days_since_last = chore_event
         .timestamp
         .as_ref()
@@ -90,26 +127,34 @@ fn render_chore(chore_event: &ChoreEvent) -> Markup {
         })
         .unwrap_or_else(|| "∞".to_string());
 
-    let next = time_until_next_chore(&now, chore_event)
+    let next = time_until_next_chore(&now, chore_event);
+    let class = classify(
+        &now,
+        &now.saturating_add(next),
+        &chore_event.interval,
+        &chore_event.timestamp,
+    );
+
+    let next_days = next
         .total(SpanTotal::from(Unit::Day).days_are_24_hours())
         .expect("can calculate total days")
         .ceil() as i64;
 
-    let next = if next == 0 {
+    let next = if next_days == 0 {
         html! { "(due today)" }
-    } else if next < 0 {
-        html! { "(due " (next.abs()) " day" @if next.abs() != 1 { "s" } " ago)" }
+    } else if next_days < 0 {
+        html! { "(due " (next_days.abs()) " day" @if next_days.abs() != 1 { "s" } " ago)" }
     } else {
-        html! { "(due in " (next) " day" @if next != 1 { "s" } ")" }
+        html! { "(due in " (next_days) " day" @if next_days != 1 { "s" } ")" }
     };
 
     html! {
-        div.chore {
+        div.chore style=(format!("view-transition-name: chore-event-{id}", id=chore_event.id)) {
             form action=(format!("/events/{id}", id=chore_event.id)) method="POST" {
                 p.name {
                     (chore_event.name)
                 }
-                button type="submit" {
+                button type="submit" class=(class) {
                     (days_since_last)
                 }
                 p.info {

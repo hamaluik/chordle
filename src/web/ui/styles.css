@@ -4,6 +4,10 @@
     min-width: 0;
 }
 
+@view-transition {
+    navigation: auto;
+}
+
 body {
     display: flex;
     flex-direction: column;
@@ -31,12 +35,13 @@ main.home .chores {
     align-items: stretch;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 32pt;
+    gap: 8pt;
     width: 100%;
 }
 
 main.home .chores .chore {
-    flex-shrink: 1;
+    flex-basis: 96pt;
+    flex-shrink: 0;
     flex-grow: 0;
 }
 
@@ -81,10 +86,31 @@ footer {
     justify-content: flex-end;
     padding: 8pt;
     font-size: 8pt;
+    view-transition-name: footer;
 }
 
 input[type=submit],
 button,
 input[type=button] {
     cursor: pointer;
+}
+
+.chore-due {
+    background-color: #e63946;
+    color: #ffffff;
+}
+
+.chore-due-soon {
+    background-color: #f4a261;
+    color: #000000;
+}
+
+.chore-due-later {
+    background-color: #457b9d;
+    color: #ffffff;
+}
+
+.chore-done {
+    background-color: #2a9d8f;
+    color: #ffffff;
 }

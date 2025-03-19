@@ -12,7 +12,7 @@ fn render_chore(chore: &Chore, has_name_error: bool, has_interval_error: bool) -
     html! {
         form method="post" action=(MANAGER_EDIT_URI) {
             input type="hidden" name="id" value=(chore.id.0);
-            div.chore {
+            div.chore style=(format!("view-transition-name: chore-{id}", id=chore.id.0)) {
                 div.form-item {
                     label for="name" { "Name" }
                     input type="text" name="name" value=(chore.name) placeholder="Take out the trash";
@@ -124,7 +124,7 @@ pub async fn render(app_state: &AppState, errors: Option<RenderErrors>) -> Resul
 
     Ok(html! {
         main.manager {
-            h1 { "Manage" }
+            h1 style="view-transition-name: manage-header" { "Manage" }
             fieldset {
                 legend { "Chores" }
                 (render_chores(chores.iter(), errors.edit_errors))

@@ -4,6 +4,52 @@
     min-width: 0;
 }
 
+:root {
+    /* Light mode variables */
+    --color-primary: #3a86ff;
+    --color-overdue: #ef476f;
+    --color-due-soon: #ffd166;
+    --color-due-later: #118ab2;
+    --color-done: #06d6a0;
+    --color-background: #f8f9fa;
+    --color-surface: #ffffff;
+    --color-text: #212529;
+    --color-text-light: #6c757d;
+    --color-error: #dc3545;
+    --color-button-primary: #3a86ff;
+    --color-button-danger: #ef476f;
+    --color-button-secondary: #e9ecef;
+    --border-radius: 12px;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+    --border-color: rgba(0, 0, 0, 0.05);
+    --input-border: #ced4da;
+    --fieldset-border: #dee2e6;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Dark mode variables */
+        --color-primary: #4d9aff;
+        --color-overdue: #ff5d8f;
+        --color-due-soon: #ffdc86;
+        --color-due-later: #25b0d8;
+        --color-done: #08f5b8;
+        --color-background: #121212;
+        --color-surface: #1e1e1e;
+        --color-text: #e9ecef;
+        --color-text-light: #adb5bd;
+        --color-error: #f8556d;
+        --color-button-primary: #4d9aff;
+        --color-button-danger: #ff5d8f;
+        --color-button-secondary: #343a40;
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        --border-color: rgba(255, 255, 255, 0.05);
+        --input-border: #495057;
+        --fieldset-border: #343a40;
+    }
+}
+
 @view-transition {
     navigation: auto;
 }
@@ -14,10 +60,14 @@ body {
     align-items: center;
     justify-content: flex-start;
     min-height: 100vh;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     margin: 0;
-    padding: 8pt;
+    padding: 16px;
     width: 100%;
+    background-color: var(--color-background);
+    color: var(--color-text);
+    line-height: 1.5;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 main {
@@ -26,77 +76,258 @@ main {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: min(100%, 72ch);
+    width: min(100%, 960px);
+    padding: 24px 0;
 }
 
+/* Home page styles */
 main.home .chores {
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8pt;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 20px;
     width: 100%;
+    padding: 16px;
 }
 
 main.home .chores .chore {
-    flex-basis: 96pt;
-    flex-shrink: 0;
-    flex-grow: 0;
+    border-radius: var(--border-radius);
+    background-color: var(--color-surface);
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    overflow: hidden;
+}
+
+main.home .chores .chore:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
 }
 
 main.home .chores .chore form {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: space-between;
     height: 100%;
+    padding: 16px 12px;
 }
 
 main.home .chore .name {
-    font-size: 10pt;
-    max-width: 24ch;
+    font-size: 14px;
+    font-weight: 600;
+    max-width: 100%;
     padding: 0;
-    margin: 0 0 8pt 0;
+    margin: 0 0 16px 0;
     text-align: center;
+    color: var(--color-text);
 }
 
 main.home .chores button[type="submit"] {
-    font-size: 28pt;
-    width: 48pt;
-    height: 48pt;
-    padding: 8pt;
+    font-size: 24px;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: none;
+    font-weight: bold;
+    transition: var(--transition);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+main.home .chores button[type="submit"]:hover {
+    transform: scale(1.05);
 }
 
 main.home .chore .info {
-    font-size: 8pt;
-    color: #888;
-    max-width: 64pt;
+    font-size: 12px;
+    color: var(--color-text-light);
+    max-width: 100%;
     padding: 0;
-    margin: 4pt 0 0 0;
+    margin: 12px 0 0 0;
     text-align: center;
+}
+
+/* Manager page styles */
+main.manager {
+    width: min(100%, 800px);
+    padding: 24px 16px;
+}
+
+main.manager h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 24px 0;
+    color: var(--color-text);
+    text-align: center;
+}
+
+main.manager fieldset {
+    border: 1px solid var(--fieldset-border);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    margin-bottom: 32px;
+    width: 100%;
+    background-color: var(--color-surface);
+    box-shadow: var(--shadow);
+}
+
+main.manager legend {
+    font-size: 18px;
+    font-weight: 600;
+    padding: 0 10px;
+    color: var(--color-text);
+}
+
+main.manager .chores {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+}
+
+main.manager .chore {
+    background-color: var(--color-surface);
+    border-radius: var(--border-radius);
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    width: 100%;
+    transition: var(--transition);
+}
+
+main.manager .form-item {
+    margin-bottom: 16px;
+    width: 100%;
+}
+
+main.manager .form-item:last-child {
+    margin-bottom: 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+main.manager label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--color-text);
+}
+
+main.manager input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    transition: var(--transition);
+}
+
+main.manager input[type="text"]:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(58, 134, 255, 0.2);
+}
+
+main.manager input[type="submit"] {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+main.manager input[type="submit"][value="Save"] {
+    background-color: var(--color-button-primary);
+    color: white;
+}
+
+main.manager input[type="submit"][value="Delete"] {
+    background-color: var(--color-button-danger);
+    color: white;
+}
+
+main.manager input[type="submit"][value="Create"] {
+    background-color: var(--color-button-primary);
+    color: white;
+}
+
+main.manager input[type="submit"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+main.manager .form-item-error {
+    display: block;
+    color: var(--color-error);
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+main.manager .form-item-error a {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+main.manager .form-item-error a:hover {
+    text-decoration: underline;
 }
 
 footer {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    padding: 0;
-    font-size: 8pt;
+    padding: 16px 0;
+    font-size: 14px;
     view-transition-name: footer;
-    align-items: flex-end;
-    width: 100%;
-    margin: 8pt 0 0 0;
+    align-items: center;
+    width: min(100%, 960px);
+    margin: 8px 0 0 0;
+    border-top: 1px solid var(--border-color);
 }
 
 footer .undo-redo {
     display: flex;
     flex-direction: row;
-    gap: 8pt;
+    gap: 12px;
 }
 
 footer .undo-redo button {
     aspect-ratio: 1;
+    background-color: var(--color-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px;
+    transition: var(--transition);
+}
+
+footer .undo-redo button:hover {
+    background-color: var(--border-color);
+}
+
+footer .undo-redo img {
+    filter: brightness(0.85);
+}
+
+@media (prefers-color-scheme: dark) {
+    footer .undo-redo img {
+        filter: invert(1) brightness(0.85);
+    }
+}
+
+footer a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 6px;
+    transition: var(--transition);
+}
+
+footer a:hover {
+    background-color: rgba(58, 134, 255, 0.1);
 }
 
 input[type=submit],
@@ -109,21 +340,49 @@ input[type=button] {
 }
 
 .chore-due {
-    background-color: #e63946;
-    color: #ffffff;
+    background-color: var(--color-overdue);
+    color: white;
 }
 
 .chore-due-soon {
-    background-color: #f4a261;
-    color: #000000;
+    background-color: var(--color-due-soon);
+    color: black;
 }
 
 .chore-due-later {
-    background-color: #457b9d;
-    color: #ffffff;
+    background-color: var(--color-due-later);
+    color: white;
 }
 
 .chore-done {
-    background-color: #2a9d8f;
-    color: #ffffff;
+    background-color: var(--color-done);
+    color: white;
+}
+
+/* Responsive styles */
+@media (max-width: 600px) {
+    main.home .chores {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 16px;
+        padding: 8px;
+    }
+
+    main.home .chores button[type="submit"] {
+        width: 56px;
+        height: 56px;
+        font-size: 20px;
+    }
+
+    main.manager fieldset {
+        padding: 16px 12px;
+    }
+
+    main.manager .form-item:last-child {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    main.manager input[type="submit"] {
+        width: 100%;
+    }
 }

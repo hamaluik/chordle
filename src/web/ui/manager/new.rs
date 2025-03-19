@@ -1,5 +1,6 @@
 use axum::{Form, extract::State};
-use jiff::Span;
+use color_eyre::eyre::Context;
+use jiff::{Span, Zoned, civil::Date, tz::TimeZone};
 use maud::Markup;
 use serde::Deserialize;
 
@@ -9,6 +10,7 @@ use crate::web::{AppState, ui::error::ErrorResponse};
 pub struct NewChoreForm {
     name: String,
     interval: String,
+    history: Option<String>,
 }
 
 pub async fn new_chore(
@@ -31,16 +33,40 @@ pub async fn new_chore(
         .await?);
     }
     let interval = interval.expect("interval is valid");
-    if let Err(e) = app_state.db.create_chore(&form.name, interval).await {
-        tracing::warn!("Failed to create chore: {e:#?}");
-        return Ok(super::render::render(
-            &app_state,
-            Some(super::render::RenderErrors {
-                create_created_ok: Some(false),
-                ..Default::default()
-            }),
-        )
-        .await?);
+    let chore_id = match app_state.db.create_chore(&form.name, interval).await {
+        Ok(id) => id,
+        Err(e) => {
+            tracing::warn!("Failed to create chore: {e:#?}");
+            return Ok(super::render::render(
+                &app_state,
+                Some(super::render::RenderErrors {
+                    create_created_ok: Some(false),
+                    ..Default::default()
+                }),
+            )
+            .await?);
+        }
+    };
+
+    if let Some(history) = form.history {
+        if let Ok(history) = history.parse::<Date>() {
+            let history = history.to_zoned(TimeZone::system()).wrap_err_with(|| {
+                format!(
+                    "Failed to create history timestamp for date: {history}",
+                    history = history
+                )
+            })?;
+
+            if let Err(e) = app_state
+                .db
+                .record_chore_event_when(chore_id, history)
+                .await
+            {
+                tracing::warn!("Failed to record chore event when creating a new chore: {e:#?}");
+            }
+        } else {
+            tracing::warn!("Failed to parse history date, not recording event history: {history}");
+        }
     }
 
     Ok(super::render::render(

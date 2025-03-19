@@ -83,6 +83,10 @@ fn render_new_chore(
                     }
                 }
                 div.form-item {
+                    label for="history" { "History" }
+                    input type="date" name="history" id="history";
+                }
+                div.form-item {
                     input type="submit" value="Create";
                 }
                 @if let Some(created_ok) = created_ok {

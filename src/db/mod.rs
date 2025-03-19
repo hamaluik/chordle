@@ -39,22 +39,23 @@ impl Db {
         Ok(Db { pool })
     }
 
-    pub async fn create_chore(&self, name: &str, interval: Span) -> Result<()> {
+    pub async fn create_chore(&self, name: &str, interval: Span) -> Result<ChoreId> {
         let interval = interval.to_string();
 
-        sqlx::query!(
+        let id: i64 = sqlx::query_scalar!(
             r#"
 insert into chores (name, interval)
 values (?, ?)
+returning id
             "#,
             name,
             interval,
         )
-        .execute(&self.pool)
+        .fetch_one(&self.pool)
         .await
         .wrap_err("Failed to create chore")?;
 
-        Ok(())
+        Ok(id.into())
     }
 
     pub async fn update_chore(&self, chore: Chore) -> Result<()> {
@@ -145,6 +146,30 @@ on chores.id = events.chore_id
     pub async fn record_chore_event(&self, chore_id: ChoreId) -> Result<()> {
         let dbid: i64 = chore_id.into();
         let timestamp = Zoned::now().to_string();
+
+        sqlx::query!(
+            r#"
+insert into events (chore_id, timestamp)
+values (?, ?)
+            "#,
+            dbid,
+            timestamp,
+        )
+        .execute(&self.pool)
+        .await
+        .wrap_err("Failed to record chore event")?;
+
+        sqlx::query!(r#"delete from redo_events"#,)
+            .execute(&self.pool)
+            .await
+            .wrap_err("Failed to clear redo events")?;
+
+        Ok(())
+    }
+
+    pub async fn record_chore_event_when(&self, chore_id: ChoreId, timestamp: Zoned) -> Result<()> {
+        let dbid: i64 = chore_id.into();
+        let timestamp = timestamp.to_string();
 
         sqlx::query!(
             r#"

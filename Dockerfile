@@ -14,9 +14,8 @@ COPY migrations ./migrations
 COPY .sqlx ./.sqlx
 RUN cargo install --target x86_64-unknown-linux-musl --path .
 
-FROM scratch
+FROM alpine
 LABEL org.opencontainers.image.source="https://github.com/hamaluik/chordle"
-COPY --from=build /usr/local/cargo/bin/chordle .
+COPY --from=build /usr/local/cargo/bin/chordle /usr/bin/chordle
 USER 1000
-ENTRYPOINT ["./chordle"]
-CMD ["--help"]
+ENTRYPOINT ["/usr/bin/chordle"]

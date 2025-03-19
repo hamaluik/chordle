@@ -157,6 +157,38 @@ server {
 }
 ```
 
+### Docker
+
+A docker image for chordle is available on ghcr.io. You can run it with the
+following command:
+
+```sh
+docker run -d --name chordle -p 8080:8080 -v /path/to/data:/data ghcr.io/hamaluik/chordle:latest --bind 0.0.0.0:8080 --sqlite-db /data/chordle.db
+```
+
+Or the following docker-compose service:
+
+```yaml
+---
+services:
+  chordle:
+    container_name: chordle
+    image: ghcr.io/hamaluik/chordle:latest
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Edmonton
+      - BIND=0.0.0.0:7777
+      - SQLITE_DB=/data/chordle.db
+    command: -v
+    ports:
+      - '7777:7777'
+    volumes:
+      - ./data:/data
+```
+
+
 ## License
 
 This project is licensed under the Apache-2.0 license, see the [LICENSE](LICENSE)

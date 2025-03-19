@@ -133,6 +133,7 @@ pub async fn render(app_state: &AppState, errors: Option<RenderErrors>) -> Resul
             }
             footer {
                 { a href="/" { "← Back to Chores" } }
+                { a href="https://github.com/hamaluik/chordle" alt="chordle on GitHub" target="_blank" { "chordle Source Code ↗" } }
             }
             (PreEscaped(r#"<script>"#))
             (PreEscaped(include_str!("./input-errors.js")))

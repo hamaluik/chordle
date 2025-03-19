@@ -13,10 +13,7 @@ pub use new::new_chore;
 
 /// GET handler for the manager page
 pub async fn manager_home(State(app_state): State<AppState>) -> Result<Markup, ErrorResponse> {
-    Ok(super::template::page(
-        "Manage Chores",
-        render::render(&app_state, Default::default())
-            .await
-            .map_err(ErrorResponse::from)?,
-    ))
+    Ok(render::render(&app_state, Default::default())
+        .await
+        .map_err(ErrorResponse::from)?)
 }

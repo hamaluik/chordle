@@ -2,11 +2,11 @@ use crate::{
     db::{Chore, ChoreId},
     web::{
         AppState,
-        ui::{MANAGER_EDIT_URI, MANAGER_NEW_URI},
+        ui::{MANAGER_EDIT_URI, MANAGER_NEW_URI, template},
     },
 };
 use color_eyre::{Result, eyre::Context};
-use maud::{Markup, html};
+use maud::{Markup, PreEscaped, html};
 
 fn render_chore(chore: &Chore, has_name_error: bool, has_interval_error: bool) -> Markup {
     html! {
@@ -15,22 +15,18 @@ fn render_chore(chore: &Chore, has_name_error: bool, has_interval_error: bool) -
             div.chore style=(format!("view-transition-name: chore-{id}", id=chore.id.0)) {
                 div.form-item {
                     label for="name" { "Name" }
-                    input type="text" name="name" value=(chore.name) placeholder="Take out the trash";
-                    @if has_name_error {
-                        span.form-item-error { "Invalid chore name, must not be empty and ≤ 160 characters." }
-                    }
+                    input type="text" .name-field .is-invalid[has_name_error] name="name" value=(chore.name) placeholder="Take out the trash" required minlength="1" maxlength="160";
+                    span.form-item-error { "Invalid chore name, must not be empty and ≤ 160 characters." }
                 }
                 div.form-item {
                     label for="interval" { "Interval" }
-                    input type="text" name="interval" value=(format!("{interval:#}", interval = chore.interval)) placeholder="2w 4d";
-                    @if has_interval_error {
-                        span.form-item-error {
-                            "Invalid interval, see "
-                            a href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html" target="_blank" {
-                                "jiff::fmt::friendly ↗"
-                            }
-                            " for formatting help"
+                    input type="text" .interval-field .is-invalid[has_interval_error] name="interval" value=(format!("{interval:#}", interval = chore.interval)) placeholder="2w 4d" required minlength="2" maxlength="160";
+                    span.form-item-error {
+                        "Invalid interval, see "
+                        a href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html" target="_blank" {
+                            "jiff::fmt::friendly ↗"
                         }
+                        " for formatting help"
                     }
                 }
                 div.form-item {
@@ -72,22 +68,18 @@ fn render_new_chore(
             div.chore {
                 div.form-item {
                     label for="name" { "Name" }
-                    input type="text" name="name" placeholder="Take out the trash";
-                    @if has_name_error {
-                        span.form-item-error { "Invalid chore name, must not be empty and ≤ 160 characters." }
-                    }
+                    input type="text" .name-field .is-invalid[has_name_error] name="name" placeholder="Take out the trash" required minlength="1" maxlength="160";
+                    span.form-item-error { "Invalid chore name, must not be empty and ≤ 160 characters." }
                 }
                 div.form-item {
                     label for="interval" { "Interval" }
-                    input type="text" name="interval" placeholder="2w 4d";
-                    @if has_interval_error {
-                        span.form-item-error {
-                            "Invalid interval, see "
-                            a href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html" target="_blank" {
-                                "jiff::fmt::friendly ↗"
-                            }
-                            " for formatting help"
+                    input type="text" .interval-field .is-invalid[has_interval_error] name="interval" placeholder="2w 4d" required minlength="2" maxlength="160";
+                    span.form-item-error {
+                        "Invalid interval, see "
+                        a href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html" target="_blank" {
+                            "jiff::fmt::friendly ↗"
                         }
+                        " for formatting help"
                     }
                 }
                 div.form-item {
@@ -122,23 +114,29 @@ pub async fn render(app_state: &AppState, errors: Option<RenderErrors>) -> Resul
         .wrap_err("Failed to get chores")?;
     let errors = errors.unwrap_or_default();
 
-    Ok(html! {
-        main.manager {
-            h1 style="view-transition-name: manage-header" { "Manage" }
-            fieldset {
-                legend { "Chores" }
-                (render_chores(chores.iter(), errors.edit_errors))
+    Ok(template::page(
+        "Manage Chores",
+        html! {
+            main.manager {
+                h1 style="view-transition-name: manage-header" { "Manage" }
+                fieldset {
+                    legend { "Chores" }
+                    (render_chores(chores.iter(), errors.edit_errors))
+                }
+                fieldset {
+                    legend { "New Chore" }
+                    (render_new_chore(
+                            errors.create_has_name_error,
+                            errors.create_has_interval_error,
+                            errors.create_created_ok))
+                }
             }
-            fieldset {
-                legend { "New Chore" }
-                (render_new_chore(
-                        errors.create_has_name_error,
-                        errors.create_has_interval_error,
-                        errors.create_created_ok))
+            footer {
+                { a href="/" { "← Back to Chores" } }
             }
-        }
-        footer {
-            { a href="/" { "← Back to Chores" } }
-        }
-    })
+            (PreEscaped(r#"<script>"#))
+            (PreEscaped(include_str!("./input-errors.js")))
+            (PreEscaped(r#"</script>"#))
+        },
+    ))
 }

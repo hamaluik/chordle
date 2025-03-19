@@ -1,19 +1,19 @@
 (function () {
-    const abort_controller = new AbortController();
-    const abort_signal = abort_controller.signal;
-    async function can_parse_span(span) {
-        abort_controller.abort();
-        return fetch(
-            "/api/parse_span?span=" + encodeURIComponent(span), {
-            signal: abort_signal
-        })
-            .then((res) => {
-                return res.ok;
-            })
-            .catch((_) => {
-                return false;
-            });
-    }
+    // const abort_controller = new AbortController();
+    // const abort_signal = abort_controller.signal;
+    // async function can_parse_span(span) {
+    //     abort_controller.abort();
+    //     return fetch(
+    //         "/api/parse_span?span=" + encodeURIComponent(span), {
+    //         signal: abort_signal
+    //     })
+    //         .then((res) => {
+    //             return res.ok;
+    //         })
+    //         .catch((_) => {
+    //             return false;
+    //         });
+    // }
 
     async function check_validity(el) {
         let okay = true;
@@ -44,10 +44,10 @@
                 // el.setCustomValidity("Intervals cannot be longer than 160 characters.");
                 okay = false;
             }
-            else if (!(await can_parse_span(el.value))) {
-                el.setCustomValidity("Invalid span, try something like '1w'");
-                okay = false;
-            }
+            // else if (!(await can_parse_span(el.value))) {
+            //     el.setCustomValidity("Invalid span, try something like '1w'");
+            //     okay = false;
+            // }
         }
         if (okay) {
             el.setCustomValidity("");

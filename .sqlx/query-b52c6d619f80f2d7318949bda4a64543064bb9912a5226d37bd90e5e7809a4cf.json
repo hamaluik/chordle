@@ -1,0 +1,38 @@
+{
+  "db_name": "SQLite",
+  "query": "\nselect\n    chores.id as \"id!\",\n    chores.name as \"name!\",\n    chores.interval as \"interval!\",\n    events.timestamp\nfrom\n    chores\nleft join\n    (select\n        chore_id,\n        max(timestamp) as timestamp\n     from\n        events\n     group by\n        chore_id) as events\non chores.id = events.chore_id\n",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "name!",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "interval!",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "timestamp",
+        "ordinal": 3,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "b52c6d619f80f2d7318949bda4a64543064bb9912a5226d37bd90e5e7809a4cf"
+}

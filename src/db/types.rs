@@ -4,7 +4,7 @@ use std::{
 };
 
 use color_eyre::{Result, eyre::Context};
-use jiff::{Span, Timestamp};
+use jiff::{Span, Zoned};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Copy)]
@@ -94,7 +94,7 @@ impl TryFrom<DbChore> for Chore {
 #[derive(Clone, Debug)]
 pub struct Event {
     pub chore_id: ChoreId,
-    pub timestamp: Timestamp,
+    pub timestamp: Zoned,
 }
 
 pub struct DbEvent {
@@ -128,48 +128,48 @@ impl TryFrom<DbEvent> for Event {
     }
 }
 
-// #[derive(Clone, Debug)]
-// pub struct ChoreEvent {
-//     pub id: ChoreId,
-//     pub name: String,
-//     pub interval: Span,
-//     pub timestamp: Option<Timestamp>,
-// }
-//
-// #[derive(Clone, Debug)]
-// pub struct DbChoreEvent {
-//     pub id: DbChoreId,
-//     pub name: String,
-//     pub interval: String,
-//     pub timestamp: Option<String>,
-// }
-//
-// impl TryFrom<DbChoreEvent> for ChoreEvent {
-//     type Error = color_eyre::eyre::Error;
-//
-//     fn try_from(chore_event: DbChoreEvent) -> Result<Self> {
-//         Ok(Self {
-//             id: chore_event.id.into(),
-//             name: chore_event.name,
-//             interval: chore_event.interval.parse().wrap_err_with(|| {
-//                 format!(
-//                     "Failed to parse interval '{interval}' for chore {id}",
-//                     id = chore_event.id,
-//                     interval = chore_event.interval
-//                 )
-//             })?,
-//             timestamp: chore_event
-//                 .timestamp
-//                 .map(|timestamp| {
-//                     timestamp.parse().wrap_err_with(|| {
-//                         format!(
-//                             "Failed to parse timestamp '{timestamp}' for chore {id}",
-//                             id = chore_event.id,
-//                             timestamp = timestamp
-//                         )
-//                     })
-//                 })
-//                 .transpose()?,
-//         })
-//     }
-// }
+#[derive(Debug)]
+pub struct ChoreEvent {
+    pub id: ChoreId,
+    pub name: String,
+    pub interval: Span,
+    pub timestamp: Option<Zoned>,
+}
+
+#[derive(Clone, Debug)]
+pub struct DbChoreEvent {
+    pub id: DbChoreId,
+    pub name: String,
+    pub interval: String,
+    pub timestamp: Option<String>,
+}
+
+impl TryFrom<DbChoreEvent> for ChoreEvent {
+    type Error = color_eyre::eyre::Error;
+
+    fn try_from(chore_event: DbChoreEvent) -> Result<Self> {
+        Ok(Self {
+            id: chore_event.id.into(),
+            name: chore_event.name,
+            interval: chore_event.interval.parse().wrap_err_with(|| {
+                format!(
+                    "Failed to parse interval '{interval}' for chore {id}",
+                    id = chore_event.id,
+                    interval = chore_event.interval
+                )
+            })?,
+            timestamp: chore_event
+                .timestamp
+                .map(|timestamp| {
+                    timestamp.parse().wrap_err_with(|| {
+                        format!(
+                            "Failed to parse timestamp '{timestamp}' for chore {id}",
+                            id = chore_event.id,
+                            timestamp = timestamp
+                        )
+                    })
+                })
+                .transpose()?,
+        })
+    }
+}

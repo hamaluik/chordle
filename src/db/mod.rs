@@ -1,11 +1,11 @@
 use color_eyre::{Result, eyre::Context};
-use jiff::Span;
+use jiff::{Span, Zoned};
 use sqlx::{SqlitePool, sqlite::SqliteConnectOptions};
 use std::path::Path;
 use types::DbChore;
 
 mod types;
-pub use types::{Chore, ChoreId};
+pub use types::{Chore, ChoreEvent, ChoreId};
 
 #[derive(Clone, Debug)]
 pub struct Db {
@@ -142,24 +142,54 @@ order by name asc
         chores.into_iter().map(|chore| chore.try_into()).collect()
     }
 
-    //     pub async fn get_all_chore_events(&self) -> Result<Vec<ChoreEvent>> {
-    //         let chores = sqlx::query_as!(
-    //             types::DbChoreEvent,
-    //             r#"
-    // select
-    //     chores.id, chores.name, chores.interval, events.timestamp
-    // from chores
-    // left join events on chores.id=events.chore_id
-    // where events.timestamp=(
-    //     select max(timestamp)
-    //     from events
-    //     where events.chore_id=chores.id
-    // )"#
-    //         )
-    //         .fetch_all(&self.pool)
-    //         .await
-    //         .wrap_err("Failed to get all chores")?;
-    //
-    //         chores.into_iter().map(|chore| chore.try_into()).collect()
-    //     }
+    pub async fn get_all_chore_events(&self) -> Result<Vec<ChoreEvent>> {
+        // assert times in the query, see
+        // https://docs.rs/sqlx/0.8.3/sqlx/macro.query_as.html#troubleshooting-error-mismatched-types
+        // for more information
+        let chores = sqlx::query_as!(
+            types::DbChoreEvent,
+            r#"
+select
+    chores.id as "id!",
+    chores.name as "name!",
+    chores.interval as "interval!",
+    events.timestamp
+from
+    chores
+left join
+    (select
+        chore_id,
+        max(timestamp) as timestamp
+     from
+        events
+     group by
+        chore_id) as events
+on chores.id = events.chore_id
+"#
+        )
+        .fetch_all(&self.pool)
+        .await
+        .wrap_err("Failed to get all chores")?;
+
+        chores.into_iter().map(|chore| chore.try_into()).collect()
+    }
+
+    pub async fn record_chore_event(&self, chore_id: ChoreId) -> Result<()> {
+        let dbid: i64 = chore_id.into();
+        let timestamp = Zoned::now().to_string();
+
+        sqlx::query!(
+            r#"
+insert into events (chore_id, timestamp)
+values (?, ?)
+            "#,
+            dbid,
+            timestamp,
+        )
+        .execute(&self.pool)
+        .await
+        .wrap_err("Failed to record chore event")?;
+
+        Ok(())
+    }
 }

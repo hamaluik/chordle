@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\ninsert into events (chore_id, timestamp)\nvalues (?, ?)\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "62407e5b63767cec6927da07093e1f4ed083175562b3a969184dbfac69ce88c4"
+}

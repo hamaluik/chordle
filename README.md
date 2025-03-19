@@ -176,16 +176,19 @@ services:
     image: ghcr.io/hamaluik/chordle:latest
     restart: unless-stopped
     environment:
-      - PUID=1000
-      - PGID=1000
       - TZ=America/Edmonton
       - BIND=0.0.0.0:7777
       - SQLITE_DB=/data/chordle.db
-    command: -v
     ports:
       - '7777:7777'
     volumes:
       - ./data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7777/api/health"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
 ```
 
 

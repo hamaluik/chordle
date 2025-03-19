@@ -1,3 +1,4 @@
+# Build image
 FROM rust AS build
 WORKDIR /usr/src
 
@@ -14,7 +15,15 @@ COPY migrations ./migrations
 COPY .sqlx ./.sqlx
 RUN cargo install --target x86_64-unknown-linux-musl --path .
 
-FROM ghcr.io/linuxserver/baseimage-alpine:3.21
+# Runtime image
+FROM alpine
 LABEL org.opencontainers.image.source="https://github.com/hamaluik/chordle"
+
+RUN apk add --no-cache tzdata
+ENV TZ=America/Edmonton
+ENV SQLITE_DB=/data/chordle.db
+ENV BIND=0.0.0.0:8080
+
 COPY --from=build /usr/local/cargo/bin/chordle /usr/bin/chordle
-CMD ["chordle", "-v"]
+ENTRYPOINT ["chordle"]
+CMD ["-v"]

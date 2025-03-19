@@ -66,9 +66,6 @@ main.home .chores button[type="submit"] {
     width: 48pt;
     height: 48pt;
     padding: 8pt;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
 }
 
 main.home .chore .info {
@@ -83,16 +80,32 @@ main.home .chore .info {
 footer {
     display: flex;
     flex-direction: row;
-    justify-content: flex-end;
-    padding: 8pt;
+    justify-content: space-between;
+    padding: 0;
     font-size: 8pt;
     view-transition-name: footer;
+    align-items: flex-end;
+    width: 100%;
+    margin: 8pt 0 0 0;
+}
+
+footer .undo-redo {
+    display: flex;
+    flex-direction: row;
+    gap: 8pt;
+}
+
+footer .undo-redo button {
+    aspect-ratio: 1;
 }
 
 input[type=submit],
 button,
 input[type=button] {
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .chore-due {

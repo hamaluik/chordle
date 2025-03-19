@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "\nselect chore_id, timestamp\nfrom redo_events\norder by timestamp desc\nlimit 1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "chore_id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "timestamp",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "6ef2510c96f12970b0222e96242cd770db6b1dd8cb0d3a8982a1ae3c66bc69d2"
+}

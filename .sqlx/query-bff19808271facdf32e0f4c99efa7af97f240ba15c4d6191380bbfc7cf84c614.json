@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\ndelete from redo_events\nwhere chore_id = ? and timestamp = ?\n",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "bff19808271facdf32e0f4c99efa7af97f240ba15c4d6191380bbfc7cf84c614"
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\ninsert into redo_events (chore_id, timestamp)\nvalues (?, ?)\n",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "162a9b9ab66f34a636563a2f1d6e0dce5aae5e37b52863ca59c507180a4ae289"
+}

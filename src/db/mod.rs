@@ -39,38 +39,6 @@ impl Db {
         Ok(Db { pool })
     }
 
-    // pub async fn get_chore(&self, id: ChoreId) -> Result<Chore> {
-    //     let dbid: i64 = id.into();
-    //     let chore = sqlx::query_as!(types::DbChore, r#"SELECT * FROM chores WHERE id = ?"#, dbid)
-    //         .fetch_one(&self.pool)
-    //         .await
-    //         .wrap_err_with(|| format!("Failed to get chore with ID {dbid}"))?;
-    //
-    //     Ok(chore.try_into()?)
-    // }
-    //
-    // pub async fn get_most_recent_event_for_chore(
-    //     &self,
-    //     chore_id: ChoreId,
-    // ) -> Result<Option<Event>> {
-    //     let dbid: i64 = chore_id.into();
-    //     let event = sqlx::query_as!(
-    //         types::DbEvent,
-    //         r#"
-    //         SELECT * FROM events
-    //         WHERE chore_id = ?
-    //         ORDER BY timestamp DESC
-    //         LIMIT 1
-    //     "#,
-    //         dbid
-    //     )
-    //     .fetch_optional(&self.pool)
-    //     .await
-    //     .wrap_err_with(|| format!("Failed to get most recent event for chore {dbid}"))?;
-    //
-    //     event.map(|event| event.try_into()).transpose()
-    // }
-
     pub async fn create_chore(&self, name: &str, interval: Span) -> Result<()> {
         let interval = interval.to_string();
 
@@ -190,6 +158,153 @@ values (?, ?)
         .await
         .wrap_err("Failed to record chore event")?;
 
+        sqlx::query!(r#"delete from redo_events"#,)
+            .execute(&self.pool)
+            .await
+            .wrap_err("Failed to clear redo events")?;
+
         Ok(())
+    }
+
+    pub async fn can_undo_chore_event(&self) -> Result<bool> {
+        let can_undo = sqlx::query!(
+            r#"
+select count(*) as count
+from events
+            "#
+        )
+        .fetch_one(&self.pool)
+        .await
+        .wrap_err("Failed to check if can undo chore event")?;
+
+        Ok(can_undo.count > 0)
+    }
+
+    pub async fn undo_chore_event(&self) -> Result<bool> {
+        let most_recent_chore_event = sqlx::query_as!(
+            types::DbEvent,
+            r#"
+select chore_id, timestamp
+from events
+order by timestamp desc
+limit 1
+            "#
+        )
+        .fetch_optional(&self.pool)
+        .await
+        .wrap_err("Failed to get most recent chore event")?;
+
+        if most_recent_chore_event.is_none() {
+            return Ok(false);
+        }
+        let most_recent_chore_event = most_recent_chore_event.unwrap();
+
+        let mut transaction = self
+            .pool
+            .begin()
+            .await
+            .wrap_err("Failed to start transaction")?;
+
+        sqlx::query!(
+            r#"
+delete from events
+where chore_id = ? and timestamp = ?
+"#,
+            most_recent_chore_event.chore_id,
+            most_recent_chore_event.timestamp,
+        )
+        .execute(&mut *transaction)
+        .await
+        .wrap_err("Failed to delete most recent chore event")?;
+
+        sqlx::query!(
+            r#"
+insert into redo_events (chore_id, timestamp)
+values (?, ?)
+"#,
+            most_recent_chore_event.chore_id,
+            most_recent_chore_event.timestamp,
+        )
+        .execute(&mut *transaction)
+        .await
+        .wrap_err("Failed to record redo event")?;
+
+        transaction
+            .commit()
+            .await
+            .wrap_err("Failed to commit undo transaction")?;
+
+        Ok(true)
+    }
+
+    pub async fn can_redo_chore_event(&self) -> Result<bool> {
+        let can_redo = sqlx::query!(
+            r#"
+select count(*) as count
+from redo_events
+            "#
+        )
+        .fetch_one(&self.pool)
+        .await
+        .wrap_err("Failed to check if can redo chore event")?;
+
+        Ok(can_redo.count > 0)
+    }
+
+    pub async fn redo_chore_event(&self) -> Result<bool> {
+        let most_recent_redo_chore_event = sqlx::query_as!(
+            types::DbEvent,
+            r#"
+select chore_id, timestamp
+from redo_events
+order by timestamp desc
+limit 1
+            "#
+        )
+        .fetch_optional(&self.pool)
+        .await
+        .wrap_err("Failed to get most recent redo chore event")?;
+
+        if most_recent_redo_chore_event.is_none() {
+            return Ok(false);
+        }
+        let most_recent_redo_chore_event = most_recent_redo_chore_event.unwrap();
+
+        let mut transaction = self
+            .pool
+            .begin()
+            .await
+            .wrap_err("Failed to start transaction")?;
+
+        sqlx::query!(
+            r#"
+delete from redo_events
+where chore_id = ? and timestamp = ?
+"#,
+            most_recent_redo_chore_event.chore_id,
+            most_recent_redo_chore_event.timestamp,
+        )
+        .execute(&mut *transaction)
+        .await
+        .wrap_err("Failed to delete most recent redo chore event")?;
+
+        sqlx::query!(
+            r#"
+insert into events (chore_id, timestamp)
+values (?, ?)
+"#,
+            most_recent_redo_chore_event.chore_id,
+            most_recent_redo_chore_event.timestamp,
+        )
+        .execute(&mut *transaction)
+        .await
+        .wrap_err("Failed to record redo event")?;
+
+        transaction
+            .commit()
+            .await
+            .wrap_err("Failed to commit redo transaction")?;
+
+        Ok(true)
     }
 }

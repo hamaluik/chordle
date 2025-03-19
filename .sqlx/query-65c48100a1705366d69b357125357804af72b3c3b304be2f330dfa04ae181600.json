@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\ndelete from events\nwhere chore_id = ? and timestamp = ?\n",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "65c48100a1705366d69b357125357804af72b3c3b304be2f330dfa04ae181600"
+}

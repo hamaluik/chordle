@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "delete from redo_events",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": []
+  },
+  "hash": "0c0db6e37ea43fb1474eddbfc6ee940a9333a938269f2cc2f6f7e7efb48fead3"
+}

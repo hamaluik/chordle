@@ -1,6 +1,9 @@
 use crate::{
     db::ChoreEvent,
-    web::{AppState, ui::MANAGER_URI},
+    web::{
+        AppState,
+        ui::{MANAGER_URI, REDO_URI, UNDO_URI},
+    },
 };
 use axum::{
     extract::{Path, State},
@@ -20,6 +23,17 @@ pub async fn home(State(app_state): State<AppState>) -> Result<Markup, ErrorResp
         .wrap_err("Failed to get all chores")?;
     let chore_events = sort_chores(chore_events);
 
+    let can_undo = app_state
+        .db
+        .can_undo_chore_event()
+        .await
+        .wrap_err("Can check if undo is possible")?;
+    let can_redo = app_state
+        .db
+        .can_redo_chore_event()
+        .await
+        .wrap_err("Can check if redo is possible")?;
+
     Ok(super::template::page(
         "Home",
         html! {
@@ -31,6 +45,22 @@ pub async fn home(State(app_state): State<AppState>) -> Result<Markup, ErrorResp
                 }
             }
             footer {
+                div.undo-redo {
+                    @if can_undo {
+                        form action=(UNDO_URI) method="POST" {
+                            button type="submit" class="undo" {
+                                img src="/undo.svg" alt="Undo";
+                            }
+                        }
+                    }
+                    @if can_redo {
+                        form action=(REDO_URI) method="POST" {
+                            button type="submit" class="redo" {
+                                img src="/redo.svg" alt="Redo";
+                            }
+                        }
+                    }
+                }
                 { a href=(MANAGER_URI) { "Manage Chores →" } }
             }
         },
@@ -46,6 +76,24 @@ pub async fn record_event(
         .record_chore_event(chore_id.into())
         .await
         .wrap_err_with(|| format!("Failed to record event for chore with ID: {}", chore_id))?;
+    Ok(Redirect::to(HOME_URI))
+}
+
+pub async fn undo_event(State(app_state): State<AppState>) -> Result<Redirect, ErrorResponse> {
+    app_state
+        .db
+        .undo_chore_event()
+        .await
+        .wrap_err("Failed to undo event")?;
+    Ok(Redirect::to(HOME_URI))
+}
+
+pub async fn redo_event(State(app_state): State<AppState>) -> Result<Redirect, ErrorResponse> {
+    app_state
+        .db
+        .redo_chore_event()
+        .await
+        .wrap_err("Failed to redo event")?;
     Ok(Redirect::to(HOME_URI))
 }
 

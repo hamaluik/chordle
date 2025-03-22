@@ -1,3 +1,5 @@
+/* TODO: switch everything to em and ch units where appropriate */
+
 * {
     box-sizing: border-box;
     min-height: 0;
@@ -196,6 +198,10 @@ main.manager .form-item {
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-end;
+}
+
+main.manager input[type="date"] {
+    -webkit-min-logical-width: calc(100% - 16px);
 }
 
 main.manager input[type="text"],
@@ -402,5 +408,8 @@ input[type=button] {
         display: block;
         grid-column: span 2;
         color: transparent;
+        border: none;
+        outline: none;
+        appearance: none;
     }
 }

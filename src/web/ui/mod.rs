@@ -32,6 +32,6 @@ pub fn routes() -> Router<AppState> {
         .route(STYLES_URI, get(static_files::styles))
         .route("/undo.svg", get(static_files::undo_svg))
         .route("/redo.svg", get(static_files::redo_svg))
-        .route("/icons/{icon}", get(static_files::icon))
         .route("/manifest.json", get(static_files::manifest))
+        .route("/icon.png", get(static_files::icon))
 }

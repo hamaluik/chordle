@@ -5,6 +5,7 @@ use axum::{
 
 use super::AppState;
 
+pub mod cache;
 mod error;
 mod home;
 mod manager;

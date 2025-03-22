@@ -102,7 +102,15 @@ pub struct IconQuery {
     pub ico: Option<bool>,
 }
 
-pub async fn favicon(
+pub async fn favicon(headers: HeaderMap, State(app_state): State<AppState>) -> impl IntoResponse {
+    let query = IconQuery {
+        s: Some(16),
+        ico: Some(true),
+    };
+    app_icon(Query(query), headers, State(app_state)).await
+}
+
+pub async fn app_icon(
     Query(query): Query<IconQuery>,
     headers: HeaderMap,
     State(app_state): State<AppState>,

@@ -33,5 +33,6 @@ pub fn routes() -> Router<AppState> {
         .route(STYLES_URI, get(static_files::styles))
         .route("/icons/{icon}", get(static_files::svg_icon))
         .route("/manifest.json", get(static_files::manifest))
-        .route("/icon.png", get(static_files::favicon))
+        .route("/icon.png", get(static_files::app_icon))
+        .route("/favicon.ico", get(static_files::favicon))
 }

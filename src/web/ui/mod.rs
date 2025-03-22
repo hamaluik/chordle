@@ -30,8 +30,7 @@ pub fn routes() -> Router<AppState> {
         .route(MANAGER_EDIT_URI, post(manager::edit_chore))
         .route(MANAGER_NEW_URI, post(manager::new_chore))
         .route(STYLES_URI, get(static_files::styles))
-        .route("/undo.svg", get(static_files::undo_svg))
-        .route("/redo.svg", get(static_files::redo_svg))
+        .route("/icons/{icon}", get(static_files::svg_icon))
         .route("/manifest.json", get(static_files::manifest))
-        .route("/icon.png", get(static_files::icon))
+        .route("/icon.png", get(static_files::favicon))
 }

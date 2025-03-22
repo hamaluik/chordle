@@ -49,14 +49,14 @@ pub async fn home(State(app_state): State<AppState>) -> Result<Markup, ErrorResp
                     @if can_undo {
                         form action=(UNDO_URI) method="POST" {
                             button type="submit" class="undo" {
-                                img src="/undo.svg" alt="Undo";
+                                img src="/icons/undo.svg" alt="Undo";
                             }
                         }
                     }
                     @if can_redo {
                         form action=(REDO_URI) method="POST" {
                             button type="submit" class="redo" {
-                                img src="/redo.svg" alt="Redo";
+                                img src="/icons/redo.svg" alt="Redo";
                             }
                         }
                     }

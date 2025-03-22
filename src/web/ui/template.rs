@@ -15,7 +15,7 @@ pub fn page(title: &str, contents: Markup) -> Markup {
                 link rel="stylesheet" href=(STYLES_URI);
 
                 @for s in &[180, 167, 152, 120, 114, 87, 80, 76, 58] {
-                    link rel="apple-touch-icon" sizes=(s) href="/icon.png?s=(s)";
+                    link rel="apple-touch-icon" sizes=(s) href=(format!("/icon.png?s={s}"));
                 }
                 meta name="apple-mobile-web-app-capable" content="yes";
                 meta name="apple-mobile-web-app-status-bar-style" content="black-translucent";

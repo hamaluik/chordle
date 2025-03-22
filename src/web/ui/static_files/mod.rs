@@ -1,6 +1,6 @@
 use axum::{
     body::Body,
-    extract::Query,
+    extract::{Path, Query},
     response::{IntoResponse, Response},
 };
 use serde::Deserialize;
@@ -16,26 +16,22 @@ pub async fn styles() -> impl IntoResponse {
         .expect("Can build styles response")
 }
 
-pub async fn undo_svg() -> impl IntoResponse {
-    let svg = include_str!("undo.svg");
-    Response::builder()
-        .header("Content-Type", "image/svg+xml")
-        .header("Content-Length", svg.len())
-        .header("Last-Modified", env!("BUILD_TIME_LAST_MODIFIED"))
-        .header("Cache-Control", "public, max-age=604800")
-        .body(Body::from(svg))
-        .expect("Can build undo svg response")
-}
+pub async fn svg_icon(Path(icon): Path<String>) -> impl IntoResponse {
+    let icon = match icon.as_str() {
+        "undo.svg" => include_str!("undo.svg"),
+        "redo.svg" => include_str!("redo.svg"),
+        "save.svg" => include_str!("save.svg"),
+        "trash.svg" => include_str!("trash.svg"),
+        _ => return Response::builder().status(404).body(Body::empty()).unwrap(),
+    };
 
-pub async fn redo_svg() -> impl IntoResponse {
-    let svg = include_str!("redo.svg");
     Response::builder()
         .header("Content-Type", "image/svg+xml")
-        .header("Content-Length", svg.len())
+        .header("Content-Length", icon.len())
         .header("Last-Modified", env!("BUILD_TIME_LAST_MODIFIED"))
         .header("Cache-Control", "public, max-age=604800")
-        .body(Body::from(svg))
-        .expect("Can build undo svg response")
+        .body(Body::from(icon))
+        .expect("Can build icon response")
 }
 
 #[derive(Deserialize)]
@@ -44,7 +40,7 @@ pub struct IconQuery {
     pub ico: Option<bool>,
 }
 
-pub async fn icon(Query(query): Query<IconQuery>) -> impl IntoResponse {
+pub async fn favicon(Query(query): Query<IconQuery>) -> impl IntoResponse {
     let icon = include_bytes!("./icon512.png");
     let (len, body) = match query.s {
         Some(512) | None => {

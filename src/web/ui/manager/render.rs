@@ -10,32 +10,46 @@ use maud::{Markup, PreEscaped, html};
 
 fn render_chore(chore: &Chore, has_name_error: bool, has_interval_error: bool) -> Markup {
     html! {
-        form method="post" action=(MANAGER_EDIT_URI) {
-            input type="hidden" name="id" value=(chore.id.0);
-            div.chore style=(format!("view-transition-name: chore-{id}", id=chore.id.0)) {
-                div.form-item {
-                    label for="name" { "Name" }
-                    input type="text" .name-field .is-invalid[has_name_error] name="name" value=(chore.name) placeholder="Take out the trash" required minlength="1" maxlength="160";
-                    span.form-item-error { "Invalid chore name, must not be empty and ≤ 160 characters." }
+        div.form-item {
+            input type="text" form=(format!("chore-form-{id}", id=chore.as_ref().id.0)) .name-field .is-invalid[has_name_error] name="name" value=(chore.name) placeholder="Take out the trash" required minlength="1" maxlength="160";
+            span.form-item-error { "Invalid chore name, must not be empty and ≤ 160 characters." }
+        }
+        div.form-item {
+            input type="text" form=(format!("chore-form-{id}", id=chore.as_ref().id.0)) .interval-field .is-invalid[has_interval_error] name="interval" value=(format!("{interval:#}", interval = chore.interval)) placeholder="2w 4d" required minlength="2" maxlength="160";
+            span.form-item-error {
+                "Invalid interval, see "
+                a href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html" target="_blank" {
+                    "jiff::fmt::friendly ↗"
                 }
-                div.form-item {
-                    label for="interval" { "Interval" }
-                    input type="text" .interval-field .is-invalid[has_interval_error] name="interval" value=(format!("{interval:#}", interval = chore.interval)) placeholder="2w 4d" required minlength="2" maxlength="160";
-                    span.form-item-error {
-                        "Invalid interval, see "
-                        a href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html" target="_blank" {
-                            "jiff::fmt::friendly ↗"
-                        }
-                        " for formatting help"
-                    }
-                }
-                div.form-item {
-                    input type="submit" name="save" value="Save";
-                    input type="submit" name="delete" value="Delete";
-                }
+                " for formatting help"
             }
         }
+        div.form-item.form-item-button {
+            button type="submit" form=(format!("chore-form-{id}", id=chore.as_ref().id.0)) name="save" value="Save" {
+                img src="/icons/save.svg" alt="Save";
+            }
+        }
+        div.form-item.form-item-button {
+            button type="submit" form=(format!("chore-form-{id}", id=chore.as_ref().id.0)) name="delete" value="Delete" {
+                img src="/icons/trash.svg" alt="Delete";
+            }
+        }
+        hr;
     }
+}
+
+fn render_chore_forms<I>(chores: I) -> Markup
+where
+    I: Iterator,
+    I::Item: AsRef<Chore>,
+{
+    html!(
+        @for chore in chores {
+            form id=(format!("chore-form-{id}", id=chore.as_ref().id.0)) method="post" action=(MANAGER_EDIT_URI) {
+                input type="hidden" name="id" value=(chore.as_ref().id.0);
+            }
+        }
+    )
 }
 
 fn render_chores<I>(chores: I, edit_errors: Option<(ChoreId, bool, bool)>) -> Markup
@@ -44,7 +58,7 @@ where
     I::Item: AsRef<Chore>,
 {
     html!(
-        div.chores {
+        div.chore-list {
             @for chore in chores {
                 ({
                     let (name_error, interval_error) = match edit_errors {
@@ -65,7 +79,7 @@ fn render_new_chore(
 ) -> Markup {
     html! {
         form method="post" action=(MANAGER_NEW_URI) {
-            div.chore {
+            div.chore-list {
                 div.form-item {
                     label for="name" { "Name" }
                     input type="text" .name-field .is-invalid[has_name_error] name="name" placeholder="Take out the trash" required minlength="1" maxlength="160";
@@ -86,7 +100,7 @@ fn render_new_chore(
                     label for="history" { "History" }
                     input type="date" name="history" id="history";
                 }
-                div.form-item {
+                div.create-button {
                     input type="submit" value="Create";
                 }
                 @if let Some(created_ok) = created_ok {
@@ -119,20 +133,21 @@ pub async fn render(app_state: &AppState, errors: Option<RenderErrors>) -> Resul
     let errors = errors.unwrap_or_default();
 
     Ok(template::page(
-        "Manage Chores",
+        "Manage Chordle Chores",
         html! {
             main.manager {
-                h1 style="view-transition-name: manage-header" { "Manage" }
-                fieldset {
-                    legend { "Chores" }
-                    (render_chores(chores.iter(), errors.edit_errors))
-                }
+                h1 style="view-transition-name: manage-header" { "Manage Chordle Chores" }
                 fieldset {
                     legend { "New Chore" }
                     (render_new_chore(
                             errors.create_has_name_error,
                             errors.create_has_interval_error,
                             errors.create_created_ok))
+                }
+                fieldset {
+                    legend { "Chores" }
+                    (render_chore_forms(chores.iter()))
+                    (render_chores(chores.iter(), errors.edit_errors))
                 }
             }
             footer {

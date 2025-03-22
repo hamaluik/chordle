@@ -35,7 +35,7 @@ pub async fn home(State(app_state): State<AppState>) -> Result<Markup, ErrorResp
         .wrap_err("Can check if redo is possible")?;
 
     Ok(super::template::page(
-        "Home",
+        "Chordle",
         html! {
             main.home {
                 div.chores {

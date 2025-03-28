@@ -33,7 +33,6 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-
-      - run: cargo update --verbose
       - name: Lint
         run: |
           cargo fmt --all -- --check
@@ -41,8 +40,11 @@ jobs:
       - name: Install check tools
         run: |
           cargo install --locked cargo-deny || true
+          cargo install --locked cargo-outdated || true
       - name: Check deny
         run: cargo deny check
+      - name: Check outdated
+        run: cargo outdated --exit-code 1
       - run: cargo test --verbose
       - run: cargo build --verbose --release
       - uses: actions/upload-artifact@v4

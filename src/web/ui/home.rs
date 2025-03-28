@@ -11,7 +11,7 @@ use axum::{
 };
 use color_eyre::eyre::Context;
 use jiff::{Span, SpanTotal, Unit, Zoned};
-use maud::{Markup, html};
+use maud::{Markup, PreEscaped, html};
 
 use super::{HOME_URI, error::ErrorResponse};
 
@@ -63,6 +63,9 @@ pub async fn home(State(app_state): State<AppState>) -> Result<Markup, ErrorResp
                 }
                 { a href=(MANAGER_URI) { "Manage Chores →" } }
             }
+            (PreEscaped(r#"<script>"#));
+            (PreEscaped(include_str!("./static_files/loading-spinner.js")));
+            (PreEscaped(r#"</script>"#));
         },
     ))
 }
@@ -198,7 +201,7 @@ fn render_chore(chore_event: &ChoreEvent) -> Markup {
 
     html! {
         div.chore style=(format!("view-transition-name: chore-event-{id}", id=chore_event.id)) {
-            form action=(format!("/events/{id}", id=chore_event.id)) method="POST" {
+            form action=(format!("/events/{id}", id=chore_event.id)) id=(format!("chore-form-{id}", id=chore_event.id)) class="chore-form" method="POST" {
                 p.name {
                     (chore_event.name)
                 }
@@ -209,6 +212,9 @@ fn render_chore(chore_event: &ChoreEvent) -> Markup {
                     "days ago"
                     br;
                     (next)
+                }
+                div.spinner.hidden role="status" {
+                    (PreEscaped(include_str!("./static_files/spinner.svg")));
                 }
             }
         }

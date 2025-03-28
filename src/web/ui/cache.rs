@@ -26,7 +26,7 @@ impl Cache {
     {
         self.etags
             .get(key.as_ref())
-            .map_or(false, |val| val == etag.as_ref())
+            .is_some_and(|val| val == etag.as_ref())
     }
 
     pub fn set_etag<S1, S2>(&mut self, key: S1, etag: S2)

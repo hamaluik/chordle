@@ -11,11 +11,11 @@ use maud::{Markup, PreEscaped, html};
 fn render_chore(chore: &Chore, has_name_error: bool, has_interval_error: bool) -> Markup {
     html! {
         div.form-item {
-            input type="text" form=(format!("chore-form-{id}", id=chore.as_ref().id.0)) .name-field .is-invalid[has_name_error] name="name" value=(chore.name) placeholder="Take out the trash" required minlength="1" maxlength="160";
+            input type="text" form=(format!("chore-form-{id}", id=chore.id.0)) .name-field .is-invalid[has_name_error] name="name" value=(chore.name) placeholder="Take out the trash" required minlength="1" maxlength="160";
             span.form-item-error { "Invalid chore name, must not be empty and ≤ 160 characters." }
         }
         div.form-item {
-            input type="text" form=(format!("chore-form-{id}", id=chore.as_ref().id.0)) .interval-field .is-invalid[has_interval_error] name="interval" value=(format!("{interval:#}", interval = chore.interval)) placeholder="2w 4d" required minlength="2" maxlength="160";
+            input type="text" form=(format!("chore-form-{id}", id=chore.id.0)) .interval-field .is-invalid[has_interval_error] name="interval" value=(format!("{interval:#}", interval = chore.interval)) placeholder="2w 4d" required minlength="2" maxlength="160";
             span.form-item-error {
                 "Invalid interval, see "
                 a href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html" target="_blank" {
@@ -25,12 +25,12 @@ fn render_chore(chore: &Chore, has_name_error: bool, has_interval_error: bool) -
             }
         }
         div.form-item.form-item-button {
-            button type="submit" form=(format!("chore-form-{id}", id=chore.as_ref().id.0)) name="save" value="Save" {
+            button type="submit" form=(format!("chore-form-{id}", id=chore.id.0)) name="save" value="Save" {
                 img src="/icons/save.svg" alt="Save";
             }
         }
         div.form-item.form-item-button {
-            button type="submit" form=(format!("chore-form-{id}", id=chore.as_ref().id.0)) name="delete" value="Delete" {
+            button type="submit" form=(format!("chore-form-{id}", id=chore.id.0)) name="delete" value="Delete" {
                 img src="/icons/trash.svg" alt="Delete";
             }
         }

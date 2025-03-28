@@ -202,12 +202,14 @@ fn render_chore(chore_event: &ChoreEvent) -> Markup {
         .expect("can calculate total days")
         .ceil() as i64;
 
-    let next = if next_days == 0 {
-        html! { "(due today)" }
-    } else if next_days < 0 {
-        html! { "(due " (next_days.abs()) " day" @if next_days.abs() != 1 { "s" } " ago)" }
-    } else {
-        html! { "(due in " (next_days) " day" @if next_days != 1 { "s" } ")" }
+    let next = match next_days.cmp(&0) {
+        std::cmp::Ordering::Equal => html! { "(due today)" },
+        std::cmp::Ordering::Less => {
+            html! { "(due " (next_days.abs()) " day" @if next_days.abs() != 1 { "s" } " ago)" }
+        }
+        std::cmp::Ordering::Greater => {
+            html! { "(due in " (next_days) " day" @if next_days != 1 { "s" } ")" }
+        }
     };
 
     html! {

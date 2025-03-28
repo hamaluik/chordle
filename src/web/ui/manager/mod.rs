@@ -13,7 +13,7 @@ pub use new::new_chore;
 
 /// GET handler for the manager page
 pub async fn manager_home(State(app_state): State<AppState>) -> Result<Markup, ErrorResponse> {
-    Ok(render::render(&app_state, Default::default())
+    render::render(&app_state, Default::default())
         .await
-        .map_err(ErrorResponse::from)?)
+        .map_err(ErrorResponse::from)
 }

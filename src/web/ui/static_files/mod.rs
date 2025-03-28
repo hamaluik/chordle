@@ -13,10 +13,10 @@ where
 {
     let id = id.as_ref();
     let cache = app_state.cache.read().expect("Can get read lock on cache");
-    if headers.get("If-None-Match").map_or(false, |val| {
-        val.to_str()
-            .map_or(false, |val| cache.etag_matches(id, val))
-    }) {
+    if headers
+        .get("If-None-Match")
+        .is_some_and(|val| val.to_str().is_ok_and(|val| cache.etag_matches(id, val)))
+    {
         return Some(
             Response::builder()
                 .status(304)
@@ -41,7 +41,7 @@ pub async fn styles(headers: HeaderMap, State(app_state): State<AppState>) -> im
     }
 
     let css = include_str!("styles.css");
-    let etag = format!("{:x}", md5::compute(&css));
+    let etag = format!("{:x}", md5::compute(css));
     {
         let mut cache = app_state
             .cache
@@ -126,7 +126,7 @@ pub async fn app_icon(
             let len = icon.len();
             (
                 len,
-                format!("{:x}", md5::compute(&icon)),
+                format!("{:x}", md5::compute(icon)),
                 Body::from(&icon[..]),
             )
         }
@@ -145,7 +145,7 @@ pub async fn app_icon(
                 .expect("Can write resized icon to buffer");
             let buf = buf.into_inner();
             let len = buf.len();
-            (len, format!("{:x}", md5::compute(&icon)), Body::from(buf))
+            (len, format!("{:x}", md5::compute(icon)), Body::from(buf))
         }
     };
 

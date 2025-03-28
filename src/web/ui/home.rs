@@ -6,8 +6,9 @@ use crate::{
     },
 };
 use axum::{
+    body::Body,
     extract::{Path, State},
-    response::Redirect,
+    response::{IntoResponse, Redirect, Response},
 };
 use color_eyre::eyre::Context;
 use jiff::{Span, SpanTotal, Unit, Zoned};
@@ -15,7 +16,7 @@ use maud::{Markup, PreEscaped, html};
 
 use super::{HOME_URI, error::ErrorResponse};
 
-pub async fn home(State(app_state): State<AppState>) -> Result<Markup, ErrorResponse> {
+pub async fn home(State(app_state): State<AppState>) -> Result<impl IntoResponse, ErrorResponse> {
     let chore_events = app_state
         .db
         .get_all_chore_events()
@@ -34,7 +35,7 @@ pub async fn home(State(app_state): State<AppState>) -> Result<Markup, ErrorResp
         .await
         .wrap_err("Can check if redo is possible")?;
 
-    Ok(super::template::page(
+    let page = super::template::page(
         "Chordle",
         html! {
             main.home {
@@ -65,9 +66,19 @@ pub async fn home(State(app_state): State<AppState>) -> Result<Markup, ErrorResp
             }
             (PreEscaped(r#"<script>"#));
             (PreEscaped(include_str!("./static_files/loading-spinner.js")));
+            (PreEscaped(include_str!("./static_files/reload.js")));
             (PreEscaped(r#"</script>"#));
         },
-    ))
+    );
+    let body = page.into_string();
+    let body_size_in_bytes = body.bytes().len();
+
+    Ok(Response::builder()
+        .header("Content-Type", "text/html; charset=utf-8")
+        .header("Content-Length", body_size_in_bytes)
+        .header("Cache-Control", "private, max-age=0, no-cache")
+        .body(Body::from(body))
+        .expect("Can build home response"))
 }
 
 pub async fn record_event(

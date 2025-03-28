@@ -16,6 +16,8 @@ jobs:
   build_and_test:
     name: Build and Test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - run: rustup update stable && rustup default stable

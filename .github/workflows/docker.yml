@@ -27,9 +27,13 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build Image
-        run: |
-          docker build . --tag ghcr.io/hamaluik/chordle:latest --progress plain
-      - name: Push Image
-        run: |
-          docker push ghcr.io/hamaluik/chordle:latest
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/hamaluik/chordle:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

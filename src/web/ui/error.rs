@@ -2,6 +2,8 @@ use axum::body::Body;
 use axum::http::{Response, StatusCode};
 use axum::response::IntoResponse;
 
+use super::l10n::Lang;
+
 #[derive(Debug)]
 pub struct ErrorResponse;
 
@@ -15,6 +17,7 @@ impl std::fmt::Display for ErrorResponse {
 impl IntoResponse for ErrorResponse {
     fn into_response(self) -> Response<Body> {
         let page = super::template::page(
+            Lang::En,
             "Error",
             maud::html! {
                 main {

@@ -131,11 +131,11 @@ main.home .spinner .spinner-svg {
 }
 
 main.home .chore .name {
-    font-size: 14px;
+    font-size: 12pt;
     font-weight: 600;
     max-width: 100%;
     padding: 0;
-    margin: 0 0 16px 0;
+    margin: 0;
     text-align: center;
     color: var(--color-text);
 }
@@ -156,11 +156,11 @@ main.home .chores button[type="submit"]:hover {
 }
 
 main.home .chore .info {
-    font-size: 12px;
+    font-size: 8pt;
     color: var(--color-text-light);
     max-width: 100%;
     padding: 0;
-    margin: 12px 0 0 0;
+    margin: 0;
     text-align: center;
 }
 
@@ -197,7 +197,7 @@ main.manager legend {
 
 main.manager .chore-list {
     display: grid;
-    grid-template-columns: 2fr 1fr auto auto;
+    grid-template-columns: 4fr 1fr auto auto;
     gap: 1ch;
 }
 
@@ -210,11 +210,25 @@ main.manager .form-item {
     justify-content: flex-start;
 }
 
-.create-button {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-end;
+main.manager .language-select {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1ch;
+}
+
+main.manager .language-select select {
+    flex: 1;
+}
+
+main.manager select {
+    padding: 0.5ch 1ch;
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    font-size: 10pt;
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    transition: var(--transition);
+    cursor: pointer;
 }
 
 main.manager input[type="date"] {
@@ -255,8 +269,7 @@ main.manager input[type="submit"] {
     font-weight: 500;
     cursor: pointer;
     transition: var(--transition);
-    color: white;
-    fill: white;
+    background-color: var(--color-button-primary);
 }
 
 main.manager button img {
@@ -431,5 +444,9 @@ input[type=button] {
         border: none;
         outline: none;
         appearance: none;
+    }
+
+    main.manager .language-select {
+        grid-template-columns: 1fr;
     }
 }

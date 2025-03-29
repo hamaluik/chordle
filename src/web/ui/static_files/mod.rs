@@ -72,6 +72,7 @@ pub async fn svg_icon(
     let icon_contents = match icon.as_str() {
         "undo.svg" => include_str!("undo.svg"),
         "redo.svg" => include_str!("redo.svg"),
+        "new.svg" => include_str!("new.svg"),
         "save.svg" => include_str!("save.svg"),
         "trash.svg" => include_str!("trash.svg"),
         _ => return Response::builder().status(404).body(Body::empty()).unwrap(),

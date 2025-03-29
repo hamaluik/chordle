@@ -2,10 +2,12 @@ use maud::{DOCTYPE, Markup, PreEscaped, html};
 
 use crate::web::ui::STYLES_URI;
 
-pub fn page(title: &str, contents: Markup) -> Markup {
+use super::l10n::Lang;
+
+pub fn page(lang: Lang, title: &str, contents: Markup) -> Markup {
     html! {
         (DOCTYPE)
-        html lang="en" {
+        html lang=(lang.to_string()) {
             head {
                 meta charset="utf-8";
                 meta http-equiv="X-UA-Compatible" content="IE=edge";

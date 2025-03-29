@@ -8,15 +8,26 @@ use crate::{
 use axum::{
     body::Body,
     extract::{Path, State},
+    http::HeaderMap,
     response::{IntoResponse, Redirect, Response},
 };
+use axum_extra::extract::CookieJar;
 use color_eyre::eyre::Context;
+use fluent::fluent_args;
 use jiff::{Span, SpanTotal, Unit, Zoned};
 use maud::{Markup, PreEscaped, html};
 
-use super::{HOME_URI, error::ErrorResponse};
+use super::{
+    HOME_URI,
+    error::ErrorResponse,
+    l10n::{L10N, Lang},
+};
 
-pub async fn home(State(app_state): State<AppState>) -> Result<impl IntoResponse, ErrorResponse> {
+pub async fn home(
+    State(app_state): State<AppState>,
+    headers: HeaderMap,
+    jar: CookieJar,
+) -> Result<impl IntoResponse, ErrorResponse> {
     let chore_events = app_state
         .db
         .get_all_chore_events()
@@ -35,13 +46,19 @@ pub async fn home(State(app_state): State<AppState>) -> Result<impl IntoResponse
         .await
         .wrap_err("Can check if redo is possible")?;
 
+    let accept_language = headers
+        .get("accept-language")
+        .and_then(|value| value.to_str().ok());
+    let lang = Lang::from_accept_language_header_and_cookie(accept_language, &jar);
+
     let page = super::template::page(
+        lang,
         "Chordle",
         html! {
             main.home {
                 div.chores {
                     @for chore_event in chore_events {
-                        (render_chore(&chore_event))
+                        (render_chore(&chore_event, lang, &app_state.l10n))
                     }
                 }
             }
@@ -50,14 +67,14 @@ pub async fn home(State(app_state): State<AppState>) -> Result<impl IntoResponse
                     @if can_undo {
                         form action=(UNDO_URI) method="POST" {
                             button type="submit" class="undo" {
-                                img src="/icons/undo.svg" alt="Undo";
+                                img src="/icons/undo.svg" alt=(app_state.l10n.translate(lang, "undo"));
                             }
                         }
                     }
                     @if can_redo {
                         form action=(REDO_URI) method="POST" {
                             button type="submit" class="redo" {
-                                img src="/icons/redo.svg" alt="Redo";
+                                img src="/icons/redo.svg" alt=(app_state.l10n.translate(lang, "redo"));
                             }
                         }
                     }
@@ -65,7 +82,7 @@ pub async fn home(State(app_state): State<AppState>) -> Result<impl IntoResponse
                 div {
                     a href=(MANAGER_URI) {
                         (PreEscaped(r#"<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cog-icon lucide-cog"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M12 2v2"/><path d="M12 22v-2"/><path d="m17 20.66-1-1.73"/><path d="M11 10.27 7 3.34"/><path d="m20.66 17-1.73-1"/><path d="m3.34 7 1.73 1"/><path d="M14 12h8"/><path d="M2 12h2"/><path d="m20.66 7-1.73 1"/><path d="m3.34 17 1.73-1"/><path d="m17 3.34-1 1.73"/><path d="m11 13.73-4 6.93"/></svg>"#))
-                        "Manage"
+                        (app_state.l10n.translate(lang, "manage-chores"))
                     }
                 }
             }
@@ -179,7 +196,7 @@ fn classify(
 }
 
 #[tracing::instrument]
-fn render_chore(chore_event: &ChoreEvent) -> Markup {
+fn render_chore(chore_event: &ChoreEvent, lang: Lang, l10n: &L10N) -> Markup {
     let now = Zoned::now();
     let days_since_last = chore_event
         .timestamp
@@ -190,9 +207,9 @@ fn render_chore(chore_event: &ChoreEvent) -> Markup {
                 .expect("can calculate time since")
                 .total(SpanTotal::from(Unit::Day).days_are_24_hours())
                 .expect("can calculate total days");
-            days.floor().to_string()
+            days.floor() as i64
         })
-        .unwrap_or_else(|| "∞".to_string());
+        .unwrap_or_else(|| -1);
 
     let next = time_until_next_chore(&now, chore_event);
     let class = classify(
@@ -208,14 +225,26 @@ fn render_chore(chore_event: &ChoreEvent) -> Markup {
         .ceil() as i64;
 
     let next = match next_days.cmp(&0) {
-        std::cmp::Ordering::Equal => html! { "(due today)" },
+        std::cmp::Ordering::Equal => html! { (l10n.translate(lang, "due-today")) },
         std::cmp::Ordering::Less => {
-            html! { "(due " (next_days.abs()) " day" @if next_days.abs() != 1 { "s" } " ago)" }
+            html! { (l10n.translate_with(lang, "due-ago", fluent_args![
+                "days" => next_days.abs(),
+            ])) }
         }
         std::cmp::Ordering::Greater => {
-            html! { "(due in " (next_days) " day" @if next_days != 1 { "s" } ")" }
+            html! { (l10n.translate_with(lang, "due-in", fluent_args![
+                "days" => next_days,
+            ])) }
         }
     };
+
+    let days_since_last_prefix = l10n.translate_with(
+        lang,
+        "days-ago-prefix",
+        fluent_args![
+            "days" => days_since_last,
+        ],
+    );
 
     html! {
         div.chore style=(format!("view-transition-name: chore-event-{id}", id=chore_event.id)) {
@@ -223,11 +252,22 @@ fn render_chore(chore_event: &ChoreEvent) -> Markup {
                 p.name {
                     (chore_event.name)
                 }
+                @if days_since_last_prefix != "﻿" {
+                    p.info {
+                        (l10n.translate_with(lang, "days-ago-prefix", fluent_args![
+                            "days" => days_since_last,
+                        ]))
+                    }
+                }
                 button type="submit" class=(class) {
-                    (days_since_last)
+                    (l10n.translate_with(lang, "days-ago-number", fluent_args![
+                        "days" => days_since_last,
+                    ]))
                 }
                 p.info {
-                    "days ago"
+                    (l10n.translate_with(lang, "days-ago-suffix", fluent_args![
+                        "days" => days_since_last,
+                    ]))
                     br;
                     (next)
                 }

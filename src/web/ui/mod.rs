@@ -7,6 +7,7 @@ use axum::{
     response::IntoResponse,
     routing::{get, post},
 };
+use l10n::Lang;
 use maud::html;
 use tower_http::catch_panic::CatchPanicLayer;
 
@@ -15,6 +16,7 @@ use super::AppState;
 pub mod cache;
 mod error;
 mod home;
+pub mod l10n;
 mod manager;
 mod static_files;
 mod template;
@@ -26,6 +28,7 @@ static REDO_URI: &str = "/events/redo";
 static MANAGER_URI: &str = "/manager";
 static MANAGER_EDIT_URI: &str = "/manager/edit";
 static MANAGER_NEW_URI: &str = "/manager/new";
+static MANAGER_LANGUAGE_URI: &str = "/manager/settings/language";
 static STYLES_URI: &str = "/styles.css";
 
 pub fn routes() -> Router<AppState> {
@@ -37,6 +40,7 @@ pub fn routes() -> Router<AppState> {
         .route(MANAGER_URI, get(manager::manager_home))
         .route(MANAGER_EDIT_URI, post(manager::edit_chore))
         .route(MANAGER_NEW_URI, post(manager::new_chore))
+        .route(MANAGER_LANGUAGE_URI, post(manager::change_language))
         .route(STYLES_URI, get(static_files::styles))
         .route("/icons/{icon}", get(static_files::svg_icon))
         .route("/manifest.json", get(static_files::manifest))
@@ -49,6 +53,7 @@ pub fn routes() -> Router<AppState> {
 fn handle_panic(_err: Box<dyn Any + Send + 'static>) -> Response<Body> {
     // err can be ignored because color_eyre will log it
     let page = template::page(
+        Lang::En,
         "Internal Server Error",
         html! {
             main {
@@ -72,6 +77,7 @@ async fn handler_404() -> impl IntoResponse {
     (
         StatusCode::NOT_FOUND,
         template::page(
+            Lang::En,
             "404 Not Found",
             html! {
                 main {

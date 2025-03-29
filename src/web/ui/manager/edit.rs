@@ -1,8 +1,12 @@
 use crate::{
     db::Chore,
-    web::{AppState, ui::error::ErrorResponse},
+    web::{
+        AppState,
+        ui::{error::ErrorResponse, l10n::Lang},
+    },
 };
-use axum::{Form, extract::State};
+use axum::{Form, extract::State, http::HeaderMap};
+use axum_extra::extract::CookieJar;
 use color_eyre::eyre::WrapErr;
 use jiff::Span;
 use maud::Markup;
@@ -20,6 +24,8 @@ pub struct EditChoreForm {
 }
 
 pub async fn edit_chore(
+    headers: HeaderMap,
+    jar: CookieJar,
     State(app_state): State<AppState>,
     Form(form): Form<EditChoreForm>,
 ) -> Result<Markup, ErrorResponse> {
@@ -36,7 +42,12 @@ pub async fn edit_chore(
         None
     };
 
-    Ok(super::render::render(&app_state, render_errors)
+    let accept_language = headers
+        .get("accept-language")
+        .and_then(|value| value.to_str().ok());
+    let lang = Lang::from_accept_language_header_and_cookie(accept_language, &jar);
+
+    Ok(super::render::render(lang, &app_state, render_errors)
         .await
         .wrap_err("Failed to render edit chore page")?)
 }

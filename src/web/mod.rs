@@ -4,7 +4,7 @@ use axum::Router;
 use color_eyre::Result;
 use jiff::Timestamp;
 use tokio::net::TcpListener;
-use ui::cache::Cache;
+use ui::{cache::Cache, l10n::L10N};
 
 use crate::{cli::Cli, db::Db};
 
@@ -16,6 +16,7 @@ pub struct AppState {
     pub launch_time: Arc<Timestamp>,
     pub db: Arc<Db>,
     pub cache: Arc<RwLock<Cache>>,
+    pub l10n: Arc<L10N>,
 }
 
 pub async fn run(cli: Cli, db: Db) -> Result<()> {
@@ -23,6 +24,7 @@ pub async fn run(cli: Cli, db: Db) -> Result<()> {
         launch_time: Arc::new(Timestamp::now()),
         db: Arc::new(db),
         cache: Arc::new(RwLock::new(Cache::new())),
+        l10n: Arc::new(L10N::new()),
     };
 
     let app = Router::new()

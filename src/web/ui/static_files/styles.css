@@ -354,6 +354,9 @@ footer a {
     padding: 8px 16px;
     border-radius: 6px;
     transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5ch;
 }
 
 footer a:hover {

@@ -1,7 +1,14 @@
+use std::any::Any;
+
 use axum::{
     Router,
+    body::Body,
+    http::{Response, StatusCode},
+    response::IntoResponse,
     routing::{get, post},
 };
+use maud::html;
+use tower_http::catch_panic::CatchPanicLayer;
 
 use super::AppState;
 
@@ -35,4 +42,43 @@ pub fn routes() -> Router<AppState> {
         .route("/manifest.json", get(static_files::manifest))
         .route("/icon.png", get(static_files::app_icon))
         .route("/favicon.ico", get(static_files::favicon))
+        .layer(CatchPanicLayer::custom(handle_panic))
+        .fallback(handler_404)
+}
+
+fn handle_panic(_err: Box<dyn Any + Send + 'static>) -> Response<Body> {
+    // err can be ignored because color_eyre will log it
+    let page = template::page(
+        "Internal Server Error",
+        html! {
+            main {
+                h1 { "Internal Server Error" }
+                p { "Sorry bud." }
+            }
+        },
+    );
+    let page = page.into_string();
+    let page_len_bytes = page.as_bytes().len();
+
+    Response::builder()
+        .status(StatusCode::INTERNAL_SERVER_ERROR)
+        .header("Content-Type", "text/html; charset=utf-8")
+        .header("Content-Length", page_len_bytes)
+        .body(Body::from(page))
+        .unwrap()
+}
+
+async fn handler_404() -> impl IntoResponse {
+    (
+        StatusCode::NOT_FOUND,
+        template::page(
+            "404 Not Found",
+            html! {
+                main {
+                    h1 { "404 Not Found" }
+                    p { "The page you are looking for does not exist." }
+                }
+            },
+        ),
+    )
 }

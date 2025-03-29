@@ -24,5 +24,6 @@ md5 = "0.7.0"
 serde = { version = "1.0.219", features = ["derive"] }
 sqlx = { version = "0.8.3", features = ["runtime-tokio", "sqlite", "migrate"] }
 tokio = { version = "1.44.1", features = ["full"] }
+tower-http = { version = "0.6.2", default-features = false, features = ["catch-panic"] }
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["fmt"] }

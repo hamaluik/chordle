@@ -7,9 +7,11 @@ RUN rustup target add x86_64-unknown-linux-musl
 
 RUN USER=root cargo new chordle
 WORKDIR /usr/src/chordle
-COPY Cargo.toml Cargo.lock build.rs ./
+COPY Cargo.toml Cargo.lock ./
+RUN echo "fn main() {}" > build.rs
 RUN cargo build --release
 
+COPY build.rs ./
 COPY src ./src
 COPY migrations ./migrations
 COPY .sqlx ./.sqlx

@@ -63,12 +63,11 @@ fn handle_panic(_err: Box<dyn Any + Send + 'static>) -> Response<Body> {
         },
     );
     let page = page.into_string();
-    let page_len_bytes = page.as_bytes().len();
 
     Response::builder()
         .status(StatusCode::INTERNAL_SERVER_ERROR)
         .header("Content-Type", "text/html; charset=utf-8")
-        .header("Content-Length", page_len_bytes)
+        .header("Content-Length", page.len()) // String.len() is the number of bytes, not chars
         .body(Body::from(page))
         .unwrap()
 }

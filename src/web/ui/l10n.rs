@@ -73,7 +73,7 @@ impl L10N {
             .expect("Can get pattern of message");
 
         let mut errors = vec![];
-        let result = bundle.format_pattern(&pattern, args, &mut errors);
+        let result = bundle.format_pattern(pattern, args, &mut errors);
 
         if !errors.is_empty() {
             tracing::error!(

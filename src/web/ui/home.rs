@@ -93,11 +93,10 @@ pub async fn home(
         },
     );
     let body = page.into_string();
-    let body_size_in_bytes = body.bytes().len();
 
     Ok(Response::builder()
         .header("Content-Type", "text/html; charset=utf-8")
-        .header("Content-Length", body_size_in_bytes)
+        .header("Content-Length", body.len()) // String.len() returns bytes not chars
         .header("Cache-Control", "private, max-age=0, no-cache")
         .body(Body::from(body))
         .expect("Can build home response"))

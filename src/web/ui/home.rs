@@ -2,7 +2,7 @@ use crate::{
     db::ChoreEvent,
     web::{
         AppState,
-        ui::{MANAGER_URI, REDO_URI, UNDO_URI},
+        ui::{MANAGER_URI, REDO_URI, STATS_URI, UNDO_URI},
     },
 };
 use axum::{
@@ -80,6 +80,10 @@ pub async fn home(
                     }
                 }
                 div {
+                    a href=(STATS_URI) {
+                        (PreEscaped(r#"<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chart-candlestick-icon lucide-chart-candlestick"><path d="M9 5v4"/><rect width="4" height="6" x="7" y="9" rx="1"/><path d="M9 15v2"/><path d="M17 3v2"/><rect width="4" height="8" x="15" y="5" rx="1"/><path d="M17 13v3"/><path d="M3 3v16a2 2 0 0 0 2 2h16"/></svg>"#))
+                        (app_state.l10n.translate(lang, "stats"))
+                    }
                     a href=(MANAGER_URI) {
                         (PreEscaped(r#"<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cog-icon lucide-cog"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M12 2v2"/><path d="M12 22v-2"/><path d="m17 20.66-1-1.73"/><path d="M11 10.27 7 3.34"/><path d="m20.66 17-1.73-1"/><path d="m3.34 7 1.73 1"/><path d="M14 12h8"/><path d="M2 12h2"/><path d="m20.66 7-1.73 1"/><path d="m3.34 17 1.73-1"/><path d="m17 3.34-1 1.73"/><path d="m11 13.73-4 6.93"/></svg>"#))
                         (app_state.l10n.translate(lang, "manage-chores"))

@@ -405,6 +405,44 @@ input[type=button] {
     color: white;
 }
 
+main.stats table {
+    max-width: 60ch;
+    border-collapse: collapse;
+}
+
+main.stats thead {
+    border-bottom: 2px solid var(--border-color);
+}
+
+main.stats table th,
+main.stats table td {
+    max-width: 10ch;
+}
+
+main.stats table th {
+    color: var(--color-text);
+    font-weight: 600;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+main.stats table th:first-child,
+main.stats table td:first-child {
+    text-align: left;
+    border-right: 1px solid var(--border-color);
+    max-width: 20ch;
+}
+
+main.stats table th,
+main.stats table td {
+    padding: 0.5ch 1ch;
+    text-align: right;
+}
+
+main.stats table tr:nth-child(even) {
+    background-color: var(--color-surface);
+}
+
 /* Responsive styles */
 @media (max-width: 600px) {
     main.home .chores {

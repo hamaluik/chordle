@@ -19,9 +19,11 @@ mod home;
 pub mod l10n;
 mod manager;
 mod static_files;
+mod stats;
 mod template;
 
 static HOME_URI: &str = "/";
+static STATS_URI: &str = "/stats";
 static EVENT_URI: &str = "/events/{chore_id}";
 static UNDO_URI: &str = "/events/undo";
 static REDO_URI: &str = "/events/redo";
@@ -34,6 +36,7 @@ static STYLES_URI: &str = "/styles.css";
 pub fn routes() -> Router<AppState> {
     Router::new()
         .route(HOME_URI, get(home::home))
+        .route(STATS_URI, get(stats::stats_page))
         .route(UNDO_URI, post(home::undo_event))
         .route(REDO_URI, post(home::redo_event))
         .route(EVENT_URI, post(home::record_event))

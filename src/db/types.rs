@@ -43,7 +43,7 @@ impl From<ChoreId> for DbChoreId {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Chore {
     /// The ID of the chore
     pub id: ChoreId,
@@ -91,7 +91,7 @@ impl TryFrom<DbChore> for Chore {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Event {
     pub chore_id: ChoreId,
     pub timestamp: Zoned,
@@ -134,7 +134,7 @@ impl TryFrom<DbEvent> for Event {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct ChoreEvent {
     pub id: ChoreId,
     pub name: String,

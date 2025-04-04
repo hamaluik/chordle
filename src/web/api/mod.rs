@@ -9,6 +9,8 @@ use axum::{
 };
 use tower_http::catch_panic::CatchPanicLayer;
 
+mod chore;
+mod error;
 mod health_check;
 mod parse_span;
 
@@ -16,6 +18,9 @@ pub fn routes() -> Router<AppState> {
     Router::new()
         .route("/health", get(health_check::health_check))
         .route("/parse_span", get(parse_span::parse_span))
+        .route("/chore/:id", get(chore::get_chore))
+        .route("/chore/:id/stats", get(chore::get_chore_stats))
+        .route("/chores", get(chore::get_chores))
         .layer(CatchPanicLayer::custom(handle_panic))
         .fallback(handler_404)
 }

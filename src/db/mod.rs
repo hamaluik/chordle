@@ -5,7 +5,7 @@ use std::path::Path;
 use types::DbChore;
 
 mod types;
-pub use types::{Chore, ChoreEvent, ChoreId};
+pub use types::{Chore, ChoreEvent, ChoreId, Event};
 
 #[derive(Clone, Debug)]
 pub struct Db {
@@ -37,6 +37,29 @@ impl Db {
             .wrap_err("Failed to run migrations")?;
 
         Ok(Db { pool })
+    }
+
+    pub async fn get_chore(&self, id: ChoreId) -> Result<Option<Chore>> {
+        let dbid: i64 = id.into();
+
+        let db_chore = sqlx::query_as!(
+            types::DbChore,
+            r#"
+select id, name, interval
+from chores
+where id = ?
+            "#,
+            dbid,
+        )
+        .fetch_optional(&self.pool)
+        .await
+        .wrap_err("Failed to get chore")?;
+
+        if let Some(db_chore) = db_chore {
+            Ok(Some(db_chore.try_into()?))
+        } else {
+            Ok(None)
+        }
     }
 
     pub async fn create_chore(&self, name: &str, interval: Span) -> Result<ChoreId> {
@@ -331,5 +354,24 @@ values (?, ?)
             .wrap_err("Failed to commit redo transaction")?;
 
         Ok(true)
+    }
+
+    pub async fn get_chore_completions(&self, chore_id: ChoreId) -> Result<Vec<Event>> {
+        let dbid: i64 = chore_id.into();
+
+        let events = sqlx::query_as!(
+            types::DbEvent,
+            r#"
+select chore_id, timestamp
+from events
+where chore_id = ?
+order by timestamp asc
+            "#,
+            dbid,
+        )
+        .fetch_all(&self.pool)
+        .await
+        .wrap_err_with(|| format!("Failed to get chore events for chore {dbid}"))?;
+        events.into_iter().map(|event| event.try_into()).collect()
     }
 }

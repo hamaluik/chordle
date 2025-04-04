@@ -3,6 +3,7 @@ use color_eyre::{Result, eyre::Context};
 mod cli;
 mod db;
 mod logging;
+mod stats;
 mod web;
 
 #[tokio::main]

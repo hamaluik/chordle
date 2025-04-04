@@ -97,6 +97,12 @@ pub struct Event {
     pub timestamp: Zoned,
 }
 
+impl AsRef<Event> for Event {
+    fn as_ref(&self) -> &Event {
+        self
+    }
+}
+
 pub struct DbEvent {
     pub chore_id: DbChoreId,
     pub timestamp: String,

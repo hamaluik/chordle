@@ -13,7 +13,7 @@ name = "chordle"
 path = "src/main.rs"
 
 [dependencies]
-axum = "0.8.1"
+axum = "0.8.6"
 axum-extra = { version = "0.10.1", features = ["cookie"] }
 clap = { version = "4.5.32", features = ["derive", "cargo", "env", "unicode", "wrap_help"] }
 color-eyre = "0.6.3"
